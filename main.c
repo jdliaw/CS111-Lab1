@@ -243,11 +243,11 @@ int main(int argc, char **argv) {
 	if (optind == argc || (fileptr != NULL && *(fileptr) == '-'))
 	  {      
 	    /* open file */
-	    fd[fn] = open(optarg, flag);
+	    fd[fn] = open(optarg, flag, 755);
 	    if (fd[fn] == -1)
 	      {
 		fprintf(stderr, "Error opening file: %s\n", optarg);
-		fd[fn] = 10; /* map to a dummy fd */
+		fd[fn] = -1; /* map to a dummy fd */
 		fn++;
 		exit_status = 1;
 		flag = 0; /* reset flags after opening file */
