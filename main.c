@@ -69,7 +69,7 @@ int opt_syntax (int optind, int argc, char**argv) {
     {
       fileptr = argv[optind];
     }
-  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
+  //  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
 
   /* convert to long */
   long num = 0;
@@ -135,12 +135,12 @@ int main(int argc, char **argv) {
   while(j < argc) {
     first_index[j] = -2;
     last_index[j] = -2;
+    j++;
   }
   j = 0;
   int flag = 0;
   
   while (1) {
-    fprintf(stdout, "test\n");
     static struct option long_options[] =
       {
 	/* File flag */
@@ -169,12 +169,12 @@ int main(int argc, char **argv) {
 	{ "catch", required_argument, 0, 'o' },
 	{ "ignore", required_argument, 0, 'p' },
 	{ "default", required_argument, 0, 'q' },
-	{ "pause", required_argument, 0, 's' },
+	{ "pause", no_argument, 0, 's' },
 	{ "close", required_argument, 0, 't'},
 
 	/* Subcommand options */
 	{ "command", required_argument, 0, 'c' },
-	{ "wait", required_argument, 0, 'z' },
+	{ "wait", no_argument, 0, 'z' },
 	{ 0, 0, 0, 0 }
       };
     int option_index = 0;
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
 	     if(c == 'r')
 	       fprintf(stdout, "--rdonly %s\n", optarg);
 	     else if(c == 'x')
-               fprintf(stdout, "--rdwronly %s\n", optarg);
+               fprintf(stdout, "--rdwr %s\n", optarg);
 	     else
                fprintf(stdout, "--wronly %s\n", optarg);
 	   }
@@ -393,11 +393,15 @@ int main(int argc, char **argv) {
 	    index++;
 	    ptr = argv[index];
 	  }
+	if(verbose_flag)
+	  fprintf(stdout, "\n");
 	*c_args = NULL; /* null terminate the args */
 
 	last_index[command_num] = index-1;
-       	//fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
-	//print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
+
+       	fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
+
+	print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
 	command_num++;
 
 	int pid = fork();
@@ -491,6 +495,9 @@ int main(int argc, char **argv) {
 	      exit_status = 1;
 	    }
 	  }
+	}
+	else {
+	  fprintf(stderr, "Error: --wait has no arguments\n");
 	}
 	break;
 
