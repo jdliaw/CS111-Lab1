@@ -1,0 +1,12 @@
+Jennifer Liaw UID:004454638
+Brandon Liu UID:004439799
+
+CS 111 Lab 1a
+
+We implemented rdonly. It opens files in read-only mode. If it fails to open the file, it sends an error message to stderr. There is also syntax checking, for example --rdonly f, where f must be a existing file. If this syntax does not hold, then there is an error message and the program continues onto the next option. A dummy value is set for the file descriptor in this case.
+
+wronly is similar, except it sets the O_WRONLY flag instead.
+
+We also implemented --verbose, which prints out all options and any arguments that follow --verbose. Known limitation include what --verbose actually prints in the case of syntax errors.
+
+Lastly, we implemented --commmand. Command runs a command with at least 4 arguments, the first three are file descriptors for input, output, and standard error respectively. The 4th argument is the command to be run, which may include arguments. Our implementation of command checks for valid file descriptors and ensures that it is syntactically correct. No known limitations.
