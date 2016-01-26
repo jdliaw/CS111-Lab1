@@ -58,7 +58,7 @@ int flag_syntax (int optind, int argc, char**argv) {
 /* signal handler */
 void catch_handler(int sig) {
   /* exit shell with status sig */
-  fprintf(stderr, "%d caught\n", sig);
+  fprintf(stderr, "caught %d\n", sig);
   exit(sig);
 }
 
@@ -68,6 +68,7 @@ int opt_syntax (int optind, int argc, char**argv) {
     {
       fileptr = argv[optind];
     }
+  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
 
   /* convert to long */
   long num = 0;
@@ -116,6 +117,7 @@ int main(int argc, char **argv) {
       fd_size = 3;
     }
   int *fd = (int*) malloc(sizeof(int)*fd_size);
+  int *pipe_array = (int*) malloc(sizeof(int)*fd_size);
   /* default fd vals for stdin,out,err */
   fd[0] = 0;
   fd[1] = 1;
@@ -152,7 +154,7 @@ int main(int argc, char **argv) {
 	{ "catch", required_argument, 0, 'o' },
 	{ "ignore", required_argument, 0, 'p' },
 	{ "default", required_argument, 0, 'q' },
-	{ "pause", no_argument, 0, 's' },
+	{ "pause", required_argument, 0, 's' },
 	{ "close", required_argument, 0, 't'},
 
 	/* Subcommand options */
@@ -165,10 +167,6 @@ int main(int argc, char **argv) {
 
     /* Detect the end of options */
     if (c == -1) {
-      /* close pipes */
-      for(i = 0; i < fd_size; i++) {
-	close(fd[i]);
-	}
       break;
     }
 
@@ -248,11 +246,12 @@ int main(int argc, char **argv) {
 	if (optind == argc || (fileptr != NULL && *(fileptr) == '-'))
 	  {      
 	    /* open file */
-	    fd[fn] = open(optarg, flag);
+	    fd[fn] = open(optarg, flag, 755);
+	    pipe_array[fn] = 0;
 	    if (fd[fn] == -1)
 	      {
 		fprintf(stderr, "Error opening file: %s\n", optarg);
-		fd[fn] = 10; /* map to a dummy fd */
+		fd[fn] = -1; /* map to a dummy fd */
 		fn++;
 		exit_status = 1;
 		flag = 0; /* reset flags after opening file */
@@ -281,7 +280,6 @@ int main(int argc, char **argv) {
 	 /* pipe */
       case 'y':
 	if(flag_syntax (optind, argc, argv)) {
-	  pid_t pid;
 	  int pipefd[2];
 	  if(pipe(pipefd) == -1) { /* fail */
 	    fprintf(stderr, "Pipe failed.\n");
@@ -291,8 +289,10 @@ int main(int argc, char **argv) {
 	  
 	  else { /* pipe successful, read index 0, write index 1 */
 	    fd[fn] = pipefd[0];
+	    pipe_array[fn] = 1;
 	    fn++;
 	    fd[fn] = pipefd[1];
+	    pipe_array[fn] = 1;
 	    fn++;
 	  }
 	  /* consumes two file numbers */
@@ -401,7 +401,12 @@ int main(int argc, char **argv) {
 		    fprintf(stderr, "Error redirecting stderr.\n");
 		    exit_status = 1;
 		  }
-
+		/* close child fds */
+		int i;
+		for(i = 0; i < fn; i++) {
+		  close(fd[i]);
+		}
+		
 		/* execvp returns -1 if error */
 		if (execvp(*tmp, tmp) < 0)
 		  {
@@ -409,9 +414,22 @@ int main(int argc, char **argv) {
 		    exit(1); /* exit child process */
 		  }
 	      }
+	    /* parent process */
 	    else
 	      {
-		waitpid(pid, &status, 0);
+		/* close the end of the pipe that is being used, use fd[in,out,err] to check */
+		/* this doesn't close only the end that's being used so TODO this */
+		if(pipe_array[in] == 1) {
+		  close(fd[in]);
+		}
+		if(pipe_array[out] == 1) {
+		  close(fd[out]);
+		}
+		if(pipe_array[err] == 1) {
+		  close(fd[err]);
+		}
+	
+		//waitpid(pid, &status, 0);
 	      }
 	  }
 	else
@@ -423,7 +441,6 @@ int main(int argc, char **argv) {
 
 	/* wait */
       case 'z':
-	
 	break;
 
 	/* close */
@@ -535,8 +552,7 @@ int main(int argc, char **argv) {
 	  fprintf(stdout, "--pause\n");
 
 	if(flag_syntax(optind, argc, argv)) {
-	  if (pause() == -1)
-	    fprintf(stderr, "Error handling signal.\n");
+	  pause();
 	}
 	else {
 	  fprintf(stderr, "Syntax error: --pause has no arguments.\n");
