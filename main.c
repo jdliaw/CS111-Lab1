@@ -118,6 +118,8 @@ int main(int argc, char **argv) {
     }
   int *fd = (int*) malloc(sizeof(int)*fd_size);
   int *pipe_array = (int*) malloc(sizeof(int)*fd_size);
+  int *proc_array = (int*) malloc(sizeof(int)*16); //max at 16 processes
+  int proc_index = 0;
   /* default fd vals for stdin,out,err */
   fd[0] = 0;
   fd[1] = 1;
@@ -417,6 +419,9 @@ int main(int argc, char **argv) {
 	    /* parent process */
 	    else
 	      {
+		proc_array[proc_index] = pid;
+		proc_index++;
+	   
 		/* close the end of the pipe that is being used, use fd[in,out,err] to check */
 		/* this doesn't close only the end that's being used so TODO this */
 		if(pipe_array[in] == 1) {
@@ -441,6 +446,15 @@ int main(int argc, char **argv) {
 
 	/* wait */
       case 'z':
+	if(flag_syntax(optind, argc, argv)) {
+	  if(verbose_flag == 1)
+	    fprintf(stdout, "--wait\n");
+	  /* TODO: 16 vs total number of processes */
+	  int i;
+	  for(i = 0; i < proc_index; i++) {
+	    waitpid(proc_array[i], &status, 0);
+	  }
+	}
 	break;
 
 	/* close */
