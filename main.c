@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
-
+#include <ctype.h>
 int cmpstr(char *a, char* b)
 {
   int i = 0;
@@ -54,6 +54,31 @@ int flag_syntax (int optind, int argc, char**argv) {
       return 0;
     }
 }
+
+int opt_syntax (int optind, int argc, char**argv) {
+  char* fileptr = NULL;
+  if (optind < argc)
+    {
+      fileptr = argv[optind];
+    }
+  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
+
+  /* convert to long */
+  long num = 0;
+  char* endp = NULL;
+  num = strtol(argv[optind-1], &endp, 10);
+  if(*endp) {
+    fprintf(stderr, "Invalid number\n");
+    return 0;
+  }
+
+  if (optind == argc || (fileptr != NULL && *(fileptr) == '-'))
+    return 1;
+  return 0;
+}
+
+
+
 
 int main(int argc, char **argv) {
   int c;
@@ -214,7 +239,7 @@ int main(int argc, char **argv) {
 	    fileptr = argv[optind];
 	  }
 
-	/*  wronly is last option or next next arg is an option */
+	/* last option or next next arg is an option */
 	if (optind == argc || (fileptr != NULL && *(fileptr) == '-'))
 	  {      
 	    /* open file */
@@ -321,6 +346,14 @@ int main(int argc, char **argv) {
 	    break;
 	  }
 
+	/* if file is closed it's an error to access it */
+	if((fd[in] == -1) || (fd[out] == -1) || (fd[err] == -1)) {
+	  fprintf(stderr, "Error: Accessing invalid file\n");
+	  exit_status = 1;
+	  break;
+	}
+
+
 	/* check verbose flag */
 	if (verbose_flag)
 	  {
@@ -387,8 +420,30 @@ int main(int argc, char **argv) {
       case 'z':
 	break;
 
-
-
+	/* close */
+      case 't':
+	if(opt_syntax(optind, argc, argv)) {
+	  if(verbose_flag == 1)
+	    fprintf(stdout, "%s %s\n", argv[optind-2], argv[optind-1]);
+	  long num;
+	  char*endptr = NULL;
+	  num = strtol(argv[optind-1], &endptr, 10);
+	  if(*endptr){
+	    fprintf(stderr, "Error converting number\n");
+	    break;
+	  }
+	  /* check if the file even exists */
+	  if((num > (fn-1)) || (num < 0)) {
+	    fprintf(stderr, "File does not exist\n");
+	    exit_status = 1;
+	    break;
+	  }
+	  close(fd[num]);
+	  fd[num] = -1;
+	}
+	else {
+	  fprintf(stderr, "Syntax error: Invalid arguments for --close\n");
+	}
 		
       /* Misc options */
       case 'v':
@@ -422,6 +477,7 @@ int main(int argc, char **argv) {
 	  exit_status = 1;
 	}
 	break;
+
 
       case ':':
       case '?':
