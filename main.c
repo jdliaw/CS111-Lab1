@@ -69,7 +69,7 @@ int opt_syntax (int optind, int argc, char**argv) {
     {
       fileptr = argv[optind];
     }
-  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
+  //  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
 
   /* convert to long */
   long num = 0;
@@ -135,6 +135,7 @@ int main(int argc, char **argv) {
   while(j < argc) {
     first_index[j] = -2;
     last_index[j] = -2;
+    j++;
   }
   j = 0;
   int flag = 0;
@@ -392,11 +393,15 @@ int main(int argc, char **argv) {
 	    index++;
 	    ptr = argv[index];
 	  }
+	if(verbose_flag)
+	  fprintf(stdout, "\n");
 	*c_args = NULL; /* null terminate the args */
 
 	last_index[command_num] = index-1;
-       	//fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
-	//print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
+
+       	fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
+
+	print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
 	command_num++;
 
 	int pid = fork();
@@ -467,8 +472,12 @@ int main(int argc, char **argv) {
 	if(flag_syntax(optind, argc, argv)) {
 	  if(verbose_flag == 1)
 	    fprintf(stdout, "--wait\n");
+	  
 	  /* TODO: 16 vs total number of processes */
 	  int i;
+	  for(i = 0; i < fn; i++) {
+	    close(fd[i]);
+	  }
 	  int status;
 	  int extstat; /* child's exit status */
 	  /* call wait on all child processes */
@@ -486,6 +495,9 @@ int main(int argc, char **argv) {
 	      exit_status = 1;
 	    }
 	  }
+	}
+	else {
+	  fprintf(stderr, "Error: --wait has no arguments\n");
 	}
 	break;
 
