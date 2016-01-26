@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <ctype.h>
-
 int cmpstr(char *a, char* b)
 {
   int i = 0;
