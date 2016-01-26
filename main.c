@@ -140,6 +140,7 @@ int main(int argc, char **argv) {
   int flag = 0;
   
   while (1) {
+    fprintf(stdout, "test\n");
     static struct option long_options[] =
       {
 	/* File flag */
@@ -467,8 +468,12 @@ int main(int argc, char **argv) {
 	if(flag_syntax(optind, argc, argv)) {
 	  if(verbose_flag == 1)
 	    fprintf(stdout, "--wait\n");
+	  
 	  /* TODO: 16 vs total number of processes */
 	  int i;
+	  for(i = 0; i < fn; i++) {
+	    close(fd[i]);
+	  }
 	  int status;
 	  int extstat; /* child's exit status */
 	  /* call wait on all child processes */
