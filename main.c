@@ -452,8 +452,20 @@ int main(int argc, char **argv) {
 	    fprintf(stdout, "--wait\n");
 	  /* TODO: 16 vs total number of processes */
 	  int i;
+	  int status;
+	  int extstat; /* child's exit status */
+	  /* call wait on all child processes */
 	  for(i = 0; i < proc_index; i++) {
 	    waitpid(proc_array[i], &status, 0);
+	    /* output exit status, copy of command + args */
+	    if (WIFEXITED(status)) {
+	      extstat = WEXITSTATUS(status);
+	     
+	    }
+	    else {
+	      fprintf(stderr, "Child process not terminated normally.\n");
+	      exit_status = 1;
+	    }
 	  }
 	}
 	break;
