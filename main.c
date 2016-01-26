@@ -131,7 +131,12 @@ int main(int argc, char **argv) {
   int *first_index = (int*) malloc(sizeof(int)* argc);
   int *last_index = (int*) malloc(sizeof(int)* argc);
   int command_num = 0;
-
+  /* initialize to -2 just for own personal error checking methods */
+  while(j < argc) {
+    first_index[j] = -2;
+    last_index[j] = -2;
+  }
+  j = 0;
   int flag = 0;
   
   while (1) {
