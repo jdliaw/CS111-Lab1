@@ -168,12 +168,12 @@ int main(int argc, char **argv) {
 	{ "catch", required_argument, 0, 'o' },
 	{ "ignore", required_argument, 0, 'p' },
 	{ "default", required_argument, 0, 'q' },
-	{ "pause", required_argument, 0, 's' },
+	{ "pause", no_argument, 0, 's' },
 	{ "close", required_argument, 0, 't'},
 
 	/* Subcommand options */
 	{ "command", required_argument, 0, 'c' },
-	{ "wait", required_argument, 0, 'z' },
+	{ "wait", no_argument, 0, 'z' },
 	{ 0, 0, 0, 0 }
       };
     int option_index = 0;
@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
 	     if(c == 'r')
 	       fprintf(stdout, "--rdonly %s\n", optarg);
 	     else if(c == 'x')
-               fprintf(stdout, "--rdwronly %s\n", optarg);
+               fprintf(stdout, "--rdwr %s\n", optarg);
 	     else
                fprintf(stdout, "--wronly %s\n", optarg);
 	   }
