@@ -28,7 +28,7 @@ int validfd (char *endptr, long fd, int fn)
 {
   if (*endptr == NULL)
     {
-      if (fd < 0 || ((fd > fn) && (fd > 2)))
+      if (fd < 0 || (fd >= fn))
 	{
 	  return 0; /* false */
 	}
@@ -85,7 +85,16 @@ int opt_syntax (int optind, int argc, char**argv) {
   return 0;
 }
 
-
+void print_waitStatus(int first_index, int second_index, char**argv, int exit_status) {
+  int i = first_index;
+  /* print exit status */
+  fprintf(stdout, "%d ", exit_status);
+  while(i <= second_index) {
+    fprintf(stdout, "%s ", argv[i]);
+    i++;
+  }
+  fprintf(stdout, "\n");
+}
 
 int main(int argc, char **argv) {
   int c;
@@ -113,18 +122,14 @@ int main(int argc, char **argv) {
     
 
   /* dynamically allocate size for fd */
-  if (fd_size < 3)
-    {
-      fd_size = 3;
-    }
   int *fd = (int*) malloc(sizeof(int)*fd_size);
   int *pipe_array = (int*) malloc(sizeof(int)*fd_size);
   int *proc_array = (int*) malloc(sizeof(int)*16); //max at 16 processes
   int proc_index = 0;
-  /* default fd vals for stdin,out,err */
-  fd[0] = 0;
-  fd[1] = 1;
-  fd[2] = 2;
+  /* used to track the first and last index of command for printing */
+  int *first_index = (int*) malloc(sizeof(int)* argc);
+  int *last_index = (int*) malloc(sizeof(int)* argc);
+  int command_num = 0;
 
   int flag = 0;
   
@@ -249,7 +254,7 @@ int main(int argc, char **argv) {
 	if (optind == argc || (fileptr != NULL && *(fileptr) == '-'))
 	  {      
 	    /* open file */
-	    fd[fn] = open(optarg, flag, 755);
+	    fd[fn] = open(optarg, flag, 0755);
 	    pipe_array[fn] = 0;
 	    if (fd[fn] == -1)
 	      {
@@ -317,7 +322,7 @@ int main(int argc, char **argv) {
 	/* cannot start block with declaration */
 	random = 0;
 	/* char array for args of cmd */
-	char **c_args = malloc(sizeof(char*) * 512);
+	char **c_args = malloc(sizeof(char*) * argc);
 	char **tmp = c_args; /* keep track of beginning of c_args */
 	int index = optind + 2;
 
@@ -361,12 +366,13 @@ int main(int argc, char **argv) {
 	  break;
 	}
 
-
 	/* check verbose flag */
 	if (verbose_flag)
 	  {
 	    fprintf(stdout, "--command %ld %ld %ld ", in, out, err);
 	  }
+
+	first_index[command_num] = index;
 
 	char *ptr = argv[index];
 	/* if arg is not an option, store into array */
@@ -381,7 +387,12 @@ int main(int argc, char **argv) {
 	    ptr = argv[index];
 	  }
 	*c_args = NULL; /* null terminate the args */
-	
+
+	last_index[command_num] = index-1;
+       	//fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
+	//print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
+	command_num++;
+
 	int pid = fork();
 	int status;
 	if (pid >= 0) /* fork successful */
