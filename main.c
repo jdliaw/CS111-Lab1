@@ -58,7 +58,7 @@ int flag_syntax (int optind, int argc, char**argv) {
 /* signal handler */
 void catch_handler(int sig) {
   /* exit shell with status sig */
-  fprintf(stderr, "caught %d\n", sig);
+  fprintf(stderr, "%d caught\n", sig);
   exit(sig);
 }
 
@@ -68,7 +68,6 @@ int opt_syntax (int optind, int argc, char**argv) {
     {
       fileptr = argv[optind];
     }
-  fprintf(stderr, "Test:\noptind: %d, argv[optind]: %s, argv[optind-1]: %s\n", optind, argv[optind], argv[optind-1]);
 
   /* convert to long */
   long num = 0;
@@ -154,7 +153,7 @@ int main(int argc, char **argv) {
 	{ "catch", required_argument, 0, 'o' },
 	{ "ignore", required_argument, 0, 'p' },
 	{ "default", required_argument, 0, 'q' },
-	{ "pause", required_argument, 0, 's' },
+	{ "pause", no_argument, 0, 's' },
 	{ "close", required_argument, 0, 't'},
 
 	/* Subcommand options */
@@ -552,7 +551,8 @@ int main(int argc, char **argv) {
 	  fprintf(stdout, "--pause\n");
 
 	if(flag_syntax(optind, argc, argv)) {
-	  pause();
+	  if (pause() == -1)
+	    fprintf(stderr, "Error handling signal.\n");
 	}
 	else {
 	  fprintf(stderr, "Syntax error: --pause has no arguments.\n");
