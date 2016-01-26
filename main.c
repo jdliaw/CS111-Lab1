@@ -55,6 +55,13 @@ int flag_syntax (int optind, int argc, char**argv) {
     }
 }
 
+/* signal handler */
+void catch_handler(int sig) {
+  /* exit shell with status sig */
+  fprintf(stderr, "caught %d\n", sig);
+  exit(sig);
+}
+
 int opt_syntax (int optind, int argc, char**argv) {
   char* fileptr = NULL;
   if (optind < argc)
@@ -76,7 +83,6 @@ int opt_syntax (int optind, int argc, char**argv) {
     return 1;
   return 0;
 }
-
 
 
 
@@ -478,6 +484,64 @@ int main(int argc, char **argv) {
 	}
 	break;
 
+	/* catch */
+      case 'o':
+	if(opt_syntax(optind, argc, argv)) {
+	  int sig_num = atoi(argv[optind-1]);
+	  if (verbose_flag == 1)
+	    fprintf(stdout, "--catch %d\n", sig_num);
+	  if (signal(sig_num, &catch_handler) == SIG_ERR)
+	    fprintf(stderr, "Error handling signal.\n");
+	}
+	else {
+	  fprintf(stderr, "Syntax error: --catch has one argument.\n");
+	  exit_status = 1;
+	}
+	break;
+
+	/* ignore */
+      case 'p':
+	if (opt_syntax(optind, argc, argv)) {
+	  int sig_num = atoi(argv[optind-1]);
+	  if (verbose_flag == 1)
+	    fprintf(stdout, "--ignore %d\n", sig_num);
+	  if (signal(sig_num, SIG_IGN) == SIG_ERR)
+	    fprintf(stderr, "Error handling signal.\n");
+	}
+	else {
+	  fprintf(stderr, "Syntax error: --ignore has one argument.\n");
+	  exit_status = 1;
+	}
+	break;
+
+	/* default */
+      case 'q':
+	if (opt_syntax(optind, argc, argv)) {
+	  int sig_num = atoi(argv[optind-1]);
+	  if (verbose_flag == 1)
+	    fprintf(stdout, "--default %d\n", sig_num);
+	  if (signal(sig_num, SIG_DFL) == SIG_ERR)
+	    fprintf(stderr, "Error handling signal.\n");
+	}
+	else {
+	  fprintf(stderr, "Syntax error: --default has one argument.\n");
+	  exit_status = 1;
+	}
+	break;
+
+	/* pause */
+      case 's':
+	if (verbose_flag == 1)
+	  fprintf(stdout, "--pause\n");
+
+	if(flag_syntax(optind, argc, argv)) {
+	  pause();
+	}
+	else {
+	  fprintf(stderr, "Syntax error: --pause has no arguments.\n");
+	  exit_status = 1;
+	}
+	break;
 
       case ':':
       case '?':
