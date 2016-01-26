@@ -101,6 +101,7 @@ int main(int argc, char **argv) {
   int fn = 0;
   int verbose_flag = 0;
   int exit_status = 0; /* exit status 0 if all successful */
+  int max_extstat = 0;
   int random;
 
   /* lookahead to get size and allocate fd array */
@@ -471,7 +472,9 @@ int main(int argc, char **argv) {
 	    /* output exit status, copy of command + args */
 	    if (WIFEXITED(status)) {
 	      extstat = WEXITSTATUS(status);
-	     
+	      print_waitStatus(first_index[i], last_index[i], argv, extstat);
+	      if (extstat > max_extstat)
+		max_extstat = extstat;
 	    }
 	    else {
 	      fprintf(stderr, "Child process not terminated normally.\n");
@@ -607,5 +610,8 @@ int main(int argc, char **argv) {
 	break;
       }
   }
-  return exit_status;
+  if (max_extstat == 0)
+    return exit_status;
+  else
+    return max_extstat;
 }
