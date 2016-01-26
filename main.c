@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <ctype.h>
+
 int cmpstr(char *a, char* b)
 {
   int i = 0;
@@ -58,7 +59,7 @@ int flag_syntax (int optind, int argc, char**argv) {
 /* signal handler */
 void catch_handler(int sig) {
   /* exit shell with status sig */
-  fprintf(stderr, "caught %d\n", sig);
+  fprintf(stderr, "%d caught\n", sig);
   exit(sig);
 }
 
@@ -566,7 +567,8 @@ int main(int argc, char **argv) {
 	  fprintf(stdout, "--pause\n");
 
 	if(flag_syntax(optind, argc, argv)) {
-	  pause();
+	  if (pause() == -1)
+	    fprintf(stderr, "Error handling signal.\n");
 	}
 	else {
 	  fprintf(stderr, "Syntax error: --pause has no arguments.\n");
