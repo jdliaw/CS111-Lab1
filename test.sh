@@ -102,5 +102,13 @@ then
     echo "Test case 10 didn't work"
 fi
 
+# Test case 11: testing --catch
+./simpsh --rdonly a --wronly b --wronly c --command 0 1 2 cat a --catch 11 --abort
+
+if [ $? -ne 11 ]
+then
+    echo "Test case 11 for --catch didn't work"
+fi
+
 
 deleteFiles
