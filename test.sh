@@ -50,7 +50,7 @@ cmp --silent d v || echo "Test case 3 didn't work"
 
 printf "abcdefghijklmnop" > e
 # Test case 4:
-./simpsh --rdonly e --wronly f --command 0 1 2 tr abc ABC
+./simpsh --rdonly e --wronly f --rdonly a --command 0 1 2 tr abc ABC
 tr abc ABC < e > v
 cmp --silent f v || echo "Test case 4 didn't work"
 
