@@ -112,5 +112,11 @@ then
     echo "Test case 11 for --catch didn't work"
 fi
 
-
+# Test case 12: testing --ignore
+./simpsh --rdonly a --wronly b --wronly c --command 0 1 2 cat a --ignore 11 --abort
+if [ $? -ne 0 ]
+then
+    echo "Test case 12 for --ignore didn't work"
+fi
+    
 deleteFiles

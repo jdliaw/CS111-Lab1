@@ -491,6 +491,9 @@ int main(int argc, char **argv) {
 	  /* call wait on all child processes */
 	  for(i = 0; i < proc_index; i++) {
 	    waitpid(proc_array[i], &status, 0);
+	    if (WIFSIGNALED(status)) {
+	      raise(WTERMSIG(status));
+	    }
 	    /* output exit status, copy of command + args */
 	    if (WIFEXITED(status)) {
 	      extstat = WEXITSTATUS(status);
