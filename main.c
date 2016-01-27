@@ -637,7 +637,7 @@ int main(int argc, char **argv) {
   }
 
   if (max_extstat == 0)
-    return exit_status;
+    exit(exit_status);
   else
-    return max_extstat;
+    exit(max_extstat);
 }
