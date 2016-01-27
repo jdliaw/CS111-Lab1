@@ -9,6 +9,12 @@ function createFiles () {
     touch d
     touch e
     touch f
+    touch g
+    printf "Alex\nJennifer\nBrandon\nKoh\nJames\nDayanara" > g
+    touch h
+    printf "appendMe" > h
+    touch i
+    touch j
     touch v
     echo "--wronly b" > v
 }
@@ -21,6 +27,10 @@ function deleteFiles () {
     rm -rf e
     rm -rf f
     rm -rf v
+    rm -rf g
+    rm -rf h
+    rm -rf i
+    rm -rf j
 }
 
 createFiles
@@ -72,6 +82,25 @@ then
     echo "Test case 8 didn't work"
 fi
 
+# Test case 9:
+#./simpsh --rdonly a --wronly b --rdwr t --command 0 1 1 cat --command 0 1 1 tr A-Z a-z --wait
+
+# Test case 10:
+./simpsh \
+  --rdonly g \
+  --pipe \
+  --pipe \
+  --creat --trunc --wronly i \
+  --creat --append --wronly j \
+  --command 3 5 6 tr A-Z a-z \
+  --command 0 2 6 sort \
+  --command 1 4 6 cat h - \
+  --wait
+
+if [ $? -ne 0 ]
+then
+    echo "Test case 10 didn't work"
+fi
 
 
 deleteFiles
