@@ -92,7 +92,7 @@ void print_waitStatus(int first_index, int second_index, char**argv, int exit_st
   while(i <= second_index) {
     fprintf(stdout, "%s ", argv[i]);
     i++;
-  }
+    }
   fprintf(stdout, "\n");
 }
 
@@ -137,7 +137,12 @@ int main(int argc, char **argv) {
     last_index[j] = -2;
     j++;
   }
+
+  char **arguments = (char**) malloc(sizeof(char*) * argc);
   j = 0;
+
+
+
   int flag = 0;
   
   while (1) {
@@ -380,7 +385,7 @@ int main(int argc, char **argv) {
 	  }
 
 	first_index[command_num] = index;
-
+	
 	char *ptr = argv[index];
 	/* if arg is not an option, store into array */
 	while ((index < argc) && (*(ptr) != '-' || *(ptr+1) != '-'))
@@ -399,9 +404,9 @@ int main(int argc, char **argv) {
 
 	last_index[command_num] = index-1;
 
-       	fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
+	//       	fprintf(stderr, "First Index: %s, Last Index: %s\n",argv[first_index[command_num]], argv[last_index[command_num]]);
 
-	print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
+	//	print_waitStatus(first_index[command_num], last_index[command_num], argv, 10);
 	command_num++;
 
 	int pid = fork();
@@ -486,7 +491,7 @@ int main(int argc, char **argv) {
 	    /* output exit status, copy of command + args */
 	    if (WIFEXITED(status)) {
 	      extstat = WEXITSTATUS(status);
-	      print_waitStatus(first_index[i], last_index[i], argv, extstat);
+	      print_waitStatus(first_index[i], last_index[i], arguments, extstat);
 	      if (extstat > max_extstat)
 		max_extstat = extstat;
 	    }
@@ -627,6 +632,7 @@ int main(int argc, char **argv) {
 	break;
       }
   }
+
   if (max_extstat == 0)
     return exit_status;
   else
