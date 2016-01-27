@@ -1,12 +1,16 @@
 Jennifer Liaw UID:004454638
 Brandon Liu UID:004439799
 
-CS 111 Lab 1a
+CS 111 Lab 1b
 
-We implemented rdonly. It opens files in read-only mode. If it fails to open the file, it sends an error message to stderr. There is also syntax checking, for example --rdonly f, where f must be a existing file. If this syntax does not hold, then there is an error message and the program continues onto the next option. A dummy value is set for the file descriptor in this case.
+For Lab 1b, we implemented all options except for --profile.
 
-wronly is similar, except it sets the O_WRONLY flag instead.
+First are the file flags. If a file flag option is set, a flag variable will be bitwise OR'd, and this flag variable will set all flags called when opening a file. After the file is opened, it will be reset for the next file. If a file is not called after flags were set, they will be discarded.
 
-We also implemented --verbose, which prints out all options and any arguments that follow --verbose. Known limitation include what --verbose actually prints in the case of syntax errors.
+Second are the file opening options. In 1a, --rdonly and --wronly were implemented. In 1b, --rdwr was added. These open files based on to read only, write only, or both, as well as the given file flags. If it fails to open the file, an error message is sent, the file descriptor number is set to invalid, and simpsh continues. --pipe was also implemented. It opens a pipe with a read and write end.
 
-Lastly, we implemented --commmand. Command runs a command with at least 4 arguments, the first three are file descriptors for input, output, and standard error respectively. The 4th argument is the command to be run, which may include arguments. Our implementation of command checks for valid file descriptors and ensures that it is syntactically correct. No known limitations.
+Third are the subcommand options. --command runs a command with at least 4 arguments, the first three are file descriptors for input, output, and standard error respectively. The 4th argument is the command to be run, which may include arguments. Our implementation of command checks for valid file descriptors and ensures that it is syntactically correct. The parent process calls fork for every command to be run, so each command is its child process. File descriptors are correctly set, and file descriptors and pipes are correctly closed for the child and parent process respectively. --wait similarly closes file descriptors, and waits for each process to finish. Our program will exit with the maximum exit status of any child process that was waited on. If this maximum is 0, or if there are no subcommand, the program will exit with exit status of 0 if everything ran successfully, or 1 if there was an error.
+
+Last are the miscellaneous options. --close closes the Nth file that was opened. Once a file is closed, it is an error to access it. Our implementation assumes N starts counting at 0. That is, --close 0 closes the 0th file in our logical file descriptor array. --verbose prints out all options and arguments that follow --verbose. If there are no syntax errors, --verbose works perfectly fine. If there are syntax errors, it is unclear exactly how --verbose should be implemented, so it prints what may possibly be a correct syntax of an option. --abort crashes the shell by raising the SIGSEGV signal. --catch, --ignore, --default, and --pause all handle signals properly.
+
+In Lab 1c, --profile will be implemented.
