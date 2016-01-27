@@ -139,6 +139,9 @@ int main(int argc, char **argv) {
   }
 
   char **arguments = (char**) malloc(sizeof(char*) * argc);
+  for(j = 0; j < argc; j++) {
+    arguments[j] = argv[j];
+  }
   j = 0;
 
 
