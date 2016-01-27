@@ -83,7 +83,11 @@ then
 fi
 
 # Test case 9:
-#./simpsh --rdonly a --wronly b --rdwr t --command 0 1 1 cat --command 0 1 1 tr A-Z a-z --wait
+./simpsh --rdonly a --wronly b --rdwr t --command 0 1 1 cat --command 0 1 1 tr A-Z a-z --wait
+if [ $? -ne 1 ]
+then
+    echo "Test case 9 didn't work"
+fi
 
 # Test case 10:
 ./simpsh \
@@ -96,10 +100,16 @@ fi
   --command 0 2 6 sort \
   --command 1 4 6 cat h - \
   --wait
-
 if [ $? -ne 0 ]
 then
     echo "Test case 10 didn't work"
+fi
+
+# Test case 11: testing --catch
+./simpsh --rdonly a --wronly b --wronly c --command 0 1 2 cat a --catch 11 --abort
+if [ $? -ne 11 ]
+then
+    echo "Test case 11 for --catch didn't work"
 fi
 
 

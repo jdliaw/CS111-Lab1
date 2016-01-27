@@ -505,7 +505,7 @@ int main(int argc, char **argv) {
 	  }
 	}
 	else {
-	  fprintf(stderr, "Error: --wait has no arguments\n");
+	  fprintf(stderr, "Syntax error: --wait has no arguments\n");
 	}
 	break;
 
@@ -619,7 +619,7 @@ int main(int argc, char **argv) {
 
 	if(flag_syntax(optind, argc, argv)) {
 	  if (pause() == -1)
-	    fprintf(stderr, "Error handling signal.\n");
+	    fprintf(stderr, "Pause failed.\n");
 	}
 	else {
 	  fprintf(stderr, "Syntax error: --pause has no arguments.\n");
