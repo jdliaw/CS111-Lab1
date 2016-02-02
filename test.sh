@@ -50,7 +50,7 @@ cmp --silent d v || echo "Test case 3 didn't work"
 
 printf "abcdefghijklmnop" > e
 # Test case 4:
-./simpsh --rdonly e --wronly f --command 0 1 2 tr abc ABC
+./simpsh --rdonly e --wronly f --rdonly a --command 0 1 2 tr abc ABC
 tr abc ABC < e > v
 cmp --silent f v || echo "Test case 4 didn't work"
 
@@ -112,5 +112,11 @@ then
     echo "Test case 11 for --catch didn't work"
 fi
 
-
+# Test case 12: testing --ignore
+./simpsh --rdonly a --wronly b --wronly c --command 0 1 2 cat a --ignore 11 --abort
+if [ $? -ne 0 ]
+then
+    echo "Test case 12 for --ignore didn't work"
+fi
+    
 deleteFiles
