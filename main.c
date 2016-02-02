@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -9,6 +10,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <ctype.h>
+
 
 int cmpstr(char *a, char* b)
 {
@@ -304,11 +306,18 @@ int main(int argc, char **argv) {
       case 'y':
 	if(flag_syntax (optind, argc, argv)) {
 	  int pipefd[2];
-	  if(pipe(pipefd) == -1) { /* fail */
+	  int errval; /* check for valid flags */
+	  if(pipe2(pipefd, flag) == -1) { /* fail */
+	    errval = errno; 
 	    fprintf(stderr, "Pipe failed.\n");
+	    /* failed because invalid flags */
+	    if (errno == EINVAL) {
+	      fprintf(stderr, "Invalid pipe flag.\n");
+	    }
 	    exit_status = 1;
-	    /* TO DO: Error handling exit status stuff */  
+	    flag = 0;
 	  }
+	 
 	  
 	  else { /* pipe successful, read index 0, write index 1 */
 	    fd[fn] = pipefd[0];
@@ -317,6 +326,7 @@ int main(int argc, char **argv) {
 	    fd[fn] = pipefd[1];
 	    pipe_array[fn] = 1;
 	    fn++;
+	    flag = 0;
 	  }
 	  /* consumes two file numbers */
 	  /* executes commands and places into logical file #'s output..? */
