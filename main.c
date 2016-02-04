@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <ctype.h>
-
+#include <sys/resource.h>
 
 int cmpstr(char *a, char* b)
 {
@@ -104,7 +104,19 @@ int main(int argc, char **argv) {
   int verbose_flag = 0;
   int exit_status = 0; /* exit status 0 if all successful */
   int max_extstat = 0;
+  int prof_flag = 0;
   int random;
+
+  struct timeval oldutime;
+  struct timeval oldstime;
+
+  struct timeval newutime;
+  struct timeval newstime;
+  oldutime.tv_sec = 0;
+  oldutime.tv_usec = 0;
+  oldstime.tv_sec = 0;
+  oldstime.tv_usec = 0;
+
 
   /* lookahead to get size and allocate fd array */
   int fd_size = 0;
@@ -498,8 +510,17 @@ int main(int argc, char **argv) {
 	  }
 	  int status;
 	  int extstat; /* child's exit status */
+	  
+	  /* getrusage on child processes */
+	  struct rusage start_ru;
+	  struct rusage end_ru;
+	  getrusage(RUSAGE_CHILDREN, &start_ru);
+	  
 	  /* call wait on all child processes */
 	  for(i = 0; i < proc_index; i++) {
+	    /* getrusage for children */
+
+
 	    waitpid(proc_array[i], &status, 0);
 	    if (WIFSIGNALED(status)) {
 	      raise(WTERMSIG(status));
@@ -515,7 +536,11 @@ int main(int argc, char **argv) {
 	      fprintf(stderr, "Child process not terminated normally.\n");
 	      exit_status = 1;
 	    }
-	  }
+	  }/* end for */
+	  getrusage(RUSAGE_CHILDREN, &end_ru);
+	  fprintf(stdout, "Child Processes: User CPU Time Used: %lld seconds, %lld microseconds. System CPU Time Used: %lld seconds, %lld microseconds.\n", \
+	      (long long)(end_ru.ru_utime.tv_sec - start_ru.ru_utime.tv_sec), (long long)(end_ru.ru_utime.tv_usec - start_ru.ru_utime.tv_usec), \
+	      (long long)(end_ru.ru_stime.tv_sec - start_ru.ru_stime.tv_sec), (long long)(end_ru.ru_stime.tv_usec - start_ru.ru_stime.tv_usec));	  
 	}
 	else {
 	  fprintf(stderr, "Syntax error: --wait has no arguments\n");
@@ -556,8 +581,7 @@ int main(int argc, char **argv) {
 	  else
 	      verbose_flag = 1;
 	}
-	else
-	  {
+	else {
 	    fprintf(stderr, "Syntax error: --verbose has no arguments.\n");
 	    exit_status = 1;
 	  }
@@ -565,6 +589,14 @@ int main(int argc, char **argv) {
 	
 	/* profile */
       case 'm':
+	if(flag_syntax(optind, argc, argv)) {
+	    prof_flag = 1;
+	    if(verbose_flag == 1)
+	      fprintf(stdout, "--profile\n");
+	  }
+	else {
+	  fprintf(stderr, "Syntax error: --profile has no arguments.\n");
+	}
 	break;
 	
 	/* abort */
@@ -647,6 +679,23 @@ int main(int argc, char **argv) {
       default:
 	break;
       }
+    /* getrusage */
+    /* need to get user and system time */
+    if(prof_flag == 1) {      
+      struct rusage ru;      
+      getrusage(RUSAGE_SELF, &ru);
+
+      /* newtime used for getting the current rusage time */
+      newutime = ru.ru_utime;
+      newstime = ru.ru_stime;
+      
+      fprintf(stdout, "User CPU Time Used: %lld seconds, %lld microseconds. System CPU Time Used: %lld seconds, %lld microseconds.\n", \
+	      (long long)(newutime.tv_sec - oldutime.tv_sec), (long long)(newutime.tv_usec - oldutime.tv_usec), \
+	      (long long)(newstime.tv_sec - oldstime.tv_sec), (long long)(newstime.tv_usec - oldstime.tv_usec));
+      /* update oldtime to the current time (which will become the old time) */
+      oldutime = newutime;
+      oldstime = newstime;
+    }
   }
 
   if (max_extstat == 0)
